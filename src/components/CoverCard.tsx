@@ -1,6 +1,7 @@
 ﻿import { useNavigate } from "react-router-dom"
 import { Play } from "lucide-react"
 import { getImgUrl, formatCount } from "../utils/format"
+import { handleImgError } from "../utils/format"
 
 interface Props { id: number; name: string; picUrl: string; playCount?: number; type?: string; style?: React.CSSProperties }
 
@@ -10,7 +11,7 @@ export function CoverCard({ id, name, picUrl, playCount, type = "playlist", styl
     <div className="group cursor-pointer transition-all duration-500 hover:scale-[1.03]" style={style}
       onClick={() => navigate(`/${type}/${id}`)}>
       <div className="relative mb-3 rounded-xl overflow-hidden bg-[var(--color-bg-elevated)] shadow-lg group-hover:shadow-[0_0_30px_-5px_var(--color-primary)] transition-all duration-500">
-        <img src={getImgUrl(picUrl, 400)} className="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+        <img src={getImgUrl(picUrl, 400)} className="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-110" alt=""  onError={handleImgError} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         {playCount !== undefined && playCount > 0 && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[10px] text-white/90 opacity-70 group-hover:opacity-100 transition-opacity">

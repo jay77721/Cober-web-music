@@ -1,4 +1,4 @@
-﻿export function formatTime(seconds: number): string {
+export function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return "0:00"
   const m = Math.floor(seconds / 60)
   const s = Math.floor(seconds % 60)
@@ -6,8 +6,8 @@
 }
 
 export function formatCount(count: number): string {
-  if (count >= 100000000) return (count / 100000000).toFixed(1) + "亿"
-  if (count >= 10000) return (count / 10000).toFixed(1) + "万"
+  if (count >= 100000000) return (count / 100000000).toFixed(1) + "?"
+  if (count >= 10000) return (count / 10000).toFixed(1) + "?"
   return count.toString()
 }
 
@@ -26,11 +26,27 @@ export function formatDuration(ms: number): string {
 }
 
 export function getSongArtists(ar: { id: number; name: string }[] | undefined): string {
-  return ar?.map((a) => a.name).join(" / ") || "未知歌手"
+  return ar?.map((a) => a.name).join(" / ") || "????"
 }
 
 export function getImgUrl(url: string | undefined, size = 200): string {
   if (url?.startsWith("http://")) url = "https://" + url.slice(7)
   if (!url) return ""
   return `${url}?param=${size}y${size}`
+}
+
+export const IMG_FALLBACK = "data:image/svg+xml," + encodeURIComponent(
+  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"0 0 24 24\">" +
+  "<rect width=\"100%\" height=\"100%\" fill=\"#f0f0f0\"/>" +
+  "<circle cx=\"9\" cy=\"18\" r=\"3\" fill=\"#ccc\"/>" +
+  "<circle cx=\"15\" cy=\"16\" r=\"3\" fill=\"#ccc\"/>" +
+  "<path d=\"M12 18V5l7-1v4l-7 1\" stroke=\"#ccc\" fill=\"none\"/>" +
+  "</svg>"
+)
+
+export function handleImgError(e: Event | React.SyntheticEvent<HTMLImageElement, Event>) {
+  const img = e.target as HTMLImageElement
+  if (img && img.src && !img.src.startsWith("data:")) {
+    img.src = IMG_FALLBACK
+  }
 }

@@ -1,6 +1,7 @@
 ﻿import { useRef } from "react"
 import { Play, Heart, Clock, Music } from "lucide-react"
 import { getImgUrl, formatDuration, getSongArtists } from "../utils/format"
+import { handleImgError } from "../utils/format"
 import { FEE_LABELS } from "../utils/constants"
 import { useLikeStore } from "../stores/useLikeStore"
 import { useAuthStore } from "../stores/useAuthStore"
@@ -48,7 +49,7 @@ export function SongList({ songs, onPlay, showAlbum = true, showHeader = false }
               <div className="flex items-center gap-3 min-w-0">
                 {alPic ? (
                   <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-sm">
-                    <img src={getImgUrl(alPic, 100)} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt="" />
+                    <img src={getImgUrl(alPic, 100)} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" alt=""  onError={handleImgError} />
                   </div>
                 ) : (
                   <div className="w-10 h-10 rounded-lg bg-[var(--color-bg-elevated)] flex items-center justify-center shrink-0">

@@ -6,6 +6,7 @@ import { usePlayerStore } from "../../stores/usePlayerStore"
 import { useAuthStore } from "../../stores/useAuthStore"
 import { useAppStore } from "../../stores/useAppStore"
 import { getImgUrl, formatCount } from "../../utils/format"
+import { handleImgError } from "../../utils/format"
 import { SongList } from "../../components/SongList"
 import { CommentSection } from "../../components/CommentSection"
 
@@ -110,7 +111,7 @@ export function PlaylistPage() {
           </button>
           {scrollY > 120 && (
             <div className="flex items-center gap-3 min-w-0 animate-fade-in">
-              <img src={getImgUrl(detail.coverImgUrl, 60)} className="w-10 h-10 rounded object-cover shrink-0" alt="" />
+              <img src={getImgUrl(detail.coverImgUrl, 60)} className="w-10 h-10 rounded object-cover shrink-0" alt=""  onError={handleImgError} />
               <span className="text-sm font-bold truncate">{detail.name}</span>
             </div>
           )}
@@ -124,7 +125,7 @@ export function PlaylistPage() {
             className="w-full h-full object-cover rounded-md shadow-2xl"
             alt=""
             style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}
-          />
+           onError={handleImgError} />
         </div>
         <div className="flex-1 min-w-0 text-center md:text-left">
           <p data-hero className="text-xs font-bold uppercase tracking-widest mb-2 text-[var(--color-text-secondary)]">Playlist</p>
@@ -132,7 +133,7 @@ export function PlaylistPage() {
             {detail.name}
           </h1>
           <div data-hero className="flex items-center justify-center md:justify-start gap-1.5 text-sm text-[var(--color-text-secondary)] mb-1">
-            <img src={getImgUrl(detail.creator?.avatarUrl, 40)} className="w-6 h-6 rounded-full shrink-0" alt="" />
+            <img src={getImgUrl(detail.creator?.avatarUrl, 40)} className="w-6 h-6 rounded-full shrink-0" alt=""  onError={handleImgError} />
             <span className="font-semibold text-white hover:underline cursor-pointer">{detail.creator?.nickname}</span>
             <span>· {formatCount(detail.trackCount)} 首</span>
             <span>· {formatCount(detail.playCount)} 次播放</span>

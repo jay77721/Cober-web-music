@@ -2,6 +2,7 @@
 import { X, Trash2, Disc3, Play, GripVertical, Save, ListMusic } from "lucide-react"
 import { usePlayerStore } from "../../stores/usePlayerStore"
 import { formatDuration, getImgUrl } from "../../utils/format"
+import { handleImgError } from "../../utils/format"
 
 export function PlayQueue() {
   const { queue, queueIndex, showPlayQueue, togglePlayQueue, playFromQueue, removeFromQueue, clearQueue } = usePlayerStore()
@@ -101,7 +102,7 @@ export function PlayQueue() {
                   )}
                 </div>
                 {(song.al?.picUrl || song.album?.picUrl) ? (
-                  <img src={getImgUrl(song.al?.picUrl || song.album?.picUrl, 80)} className="w-9 h-9 rounded object-cover shrink-0" alt="" />
+                  <img src={getImgUrl(song.al?.picUrl || song.album?.picUrl, 80)} className="w-9 h-9 rounded object-cover shrink-0" alt=""  onError={handleImgError} />
                 ) : (
                   <div className="w-9 h-9 rounded bg-[var(--color-bg-elevated)] flex items-center justify-center shrink-0">
                     <Disc3 size={14} className="text-[var(--color-text-muted)]" />

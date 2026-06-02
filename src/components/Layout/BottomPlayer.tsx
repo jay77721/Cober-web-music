@@ -5,13 +5,14 @@ import { useLikeStore } from "../../stores/useLikeStore"
 import { useAuthStore } from "../../stores/useAuthStore"
 import { useAppStore } from "../../stores/useAppStore"
 import { formatTime, getImgUrl } from "../../utils/format"
+import { handleImgError } from "../../utils/format"
 
 function AlbumCover({ url, isPlaying }: { url?: string; isPlaying: boolean }) {
   if (url) return (
     <img src={getImgUrl(url, 120)}
       className={`w-12 h-12 rounded-md object-cover shrink-0 shadow-lg ${isPlaying ? "animate-spin-slow" : ""}`}
       style={{ animationDuration: "6s", animationPlayState: isPlaying ? "running" : "paused" }}
-      alt="" />
+      alt=""  onError={handleImgError} />
   )
   return (
     <div className="w-12 h-12 rounded-md bg-[var(--color-bg-elevated)] flex items-center justify-center shrink-0">
@@ -33,12 +34,6 @@ export function BottomPlayer() {
   const barRef = useRef<HTMLDivElement>(null)
   const prevVolumeRef = useRef(volume)
 
-  if (!currentSong) return null
-
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
-  const liked = isLiked(currentSong.id)
-  const albumUrl = currentSong.al?.picUrl || currentSong.album?.picUrl
-
   const getProgressFromEvent = useCallback((e: React.MouseEvent | MouseEvent) => {
     if (!barRef.current) return 0
     const rect = barRef.current.getBoundingClientRect()
@@ -54,6 +49,12 @@ export function BottomPlayer() {
     window.addEventListener("mousemove", onMove)
     window.addEventListener("mouseup", onUp)
   }, [duration, seek, getProgressFromEvent])
+
+  if (!currentSong) return null
+
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+  const liked = isLiked(currentSong.id)
+  const albumUrl = currentSong.al?.picUrl || currentSong.album?.picUrl
 
   const toggleMute = () => {
     if (volume > 0 && !isMuted) { prevVolumeRef.current = volume; setMuted(true) }

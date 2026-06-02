@@ -4,6 +4,7 @@ import { useLikeStore } from "../../stores/useLikeStore"
 import { useAuthStore } from "../../stores/useAuthStore"
 import { useAppStore } from "../../stores/useAppStore"
 import { getImgUrl } from "../../utils/format"
+import { handleImgError } from "../../utils/format"
 
 export function MiniPlayer() {
   const { currentSong, isPlaying, currentTime, duration, toggle, toggleFullPlayer } = usePlayerStore()
@@ -25,7 +26,7 @@ export function MiniPlayer() {
           <img src={getImgUrl(albumUrl, 120)}
             className={`w-10 h-10 rounded-md object-cover shrink-0 ${isPlaying ? "animate-spin-slow" : ""}`}
             style={{ animationDuration: "6s", animationPlayState: isPlaying ? "running" : "paused" }}
-            alt="" />
+            alt=""  onError={handleImgError} />
         ) : (
           <div className="w-10 h-10 rounded-md bg-[var(--color-bg-elevated)] flex items-center justify-center shrink-0">
             <Disc3 size={18} className="text-[var(--color-text-muted)]" />

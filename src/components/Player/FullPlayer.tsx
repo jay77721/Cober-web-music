@@ -6,6 +6,7 @@ import { useLikeStore } from "../../stores/useLikeStore"
 import { useAuthStore } from "../../stores/useAuthStore"
 import { useAppStore } from "../../stores/useAppStore"
 import { formatTime, getImgUrl } from "../../utils/format"
+import { handleImgError } from "../../utils/format"
 import { SimiSongs } from "../SimiSongs"
 import type { PlayMode, AudioQuality } from "../../types/player"
 import gsap from "gsap"
@@ -117,7 +118,7 @@ export function FullPlayer() {
       {albumUrl && (
         <div className="absolute inset-0 transition-all duration-700">
           <img src={getImgUrl(albumUrl, 500)} className="w-full h-full object-cover opacity-40"
-            style={{ filter: "blur(80px) saturate(1.5)" }} alt="" />
+            style={{ filter: "blur(80px) saturate(1.5)" }} alt=""  onError={handleImgError} />
           <div className="absolute inset-0 bg-black/30" />
         </div>
       )}
@@ -146,7 +147,7 @@ export function FullPlayer() {
               <img src={getImgUrl(albumUrl, 500)}
                 className="w-full h-full rounded-full object-cover shadow-2xl animate-spin-slow"
                 style={{ animationPlayState: isPlaying ? "running" : "paused" }}
-                alt="" />
+                alt=""  onError={handleImgError} />
             ) : (
               <div className="w-full h-full rounded-full bg-white/5 flex items-center justify-center">
                 <Disc3 size={60} className="text-white/20" />

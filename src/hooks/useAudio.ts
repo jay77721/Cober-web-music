@@ -27,6 +27,7 @@ export let audioSeek: ((time: number) => void) | null = null
 
 export function useAudio() {
   const howlRef = useRef<Howl | null>(null)
+  const audioUnlockedRef = useRef(false)
   const rafRef = useRef<number>(0)
   const unsubBufferRef = useRef<(() => void) | null>(null)
   const { currentSong, isPlaying, volume, crossfade, audioQuality, next, setDuration, setCurrentTime, setLyrics, setCurrentLyricIndex, setBufferProgress, setLoading, setError } = usePlayerStore()
@@ -97,9 +98,9 @@ export function useAudio() {
           const fb = await getSongUrl(song.id, 128000)
           const fbUrl = fb.data?.[0]?.url
           if (!fbUrl) { setError("歌曲暂时无法播放"); setLoading(false); return }
-          setupHowl(fbUrl, song)
+          setupHowl(fbUrl.replace(/^http:/, "https:"), song)
         } else { setError("歌曲暂时无法播放"); setLoading(false); return }
-      } else { setupHowl(url, song) }
+      } else { setupHowl(url.replace(/^http:/, "https:"), song) }
     } catch { setError("加载失败"); setLoading(false) }
     try {
       const lr = await getLyric(song.id)
@@ -110,7 +111,7 @@ export function useAudio() {
   useEffect(() => {
     if (currentSong) loadSong(currentSong)
     return () => { if (howlRef.current) { howlRef.current.unload(); howlRef.current = null } unsubBufferRef.current?.() }
-  }, [currentSong?.id])
+  }, [currentSong?.id, loadSong])
 
   useEffect(() => { if (howlRef.current) { if (isPlaying) howlRef.current.play(); else howlRef.current.pause() } }, [isPlaying])
   useEffect(() => { if (howlRef.current) howlRef.current.volume(volume) }, [volume])
