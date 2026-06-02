@@ -1,5 +1,5 @@
-﻿import { NavLink, useLocation } from "react-router-dom"
-import { Compass, Search, TrendingUp, Clapperboard, Library, Disc3, Film, Palette } from "lucide-react"
+import { NavLink, useLocation } from "react-router-dom"
+import { Compass, Search, TrendingUp, Clapperboard, Library, Film, Palette } from "lucide-react"
 import { SIDEBAR_MENU } from "../../utils/constants"
 import { useThemeStore } from "../../stores/useThemeStore"
 import type { LucideIcon } from "lucide-react"
@@ -13,9 +13,7 @@ export function Sidebar() {
   return (
     <aside className="w-56 h-full flex flex-col bg-[var(--color-bg-surface)] shrink-0 border-r border-[var(--color-border)]">
       <div className="h-16 flex items-center px-6 gap-2.5">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-          <Disc3 size={18} className="text-white" />
-        </div>
+        <img src="/logo.png" alt="Cober Music" className="w-8 h-8 rounded-full object-cover" />
         <span className="text-base font-bold tracking-tight">Cober</span>
       </div>
       <nav className="flex-1 px-3 py-2 space-y-1">
@@ -41,7 +39,7 @@ export function Sidebar() {
         <button onClick={togglePrefs}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-highlight)] hover:text-[var(--color-text-primary)] transition-all">
           <Palette size={18} />
-          <span>主题偏好</span>
+          <span>����ƫ��</span>
           <span className="ml-auto w-3 h-3 rounded-full" style={{ backgroundColor: "var(--color-primary)" }} />
         </button>
       </div>

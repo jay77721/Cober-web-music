@@ -1,8 +1,5 @@
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./public/favicon.svg">
-    <img width="128" height="128" alt="Cober Music" src="./public/favicon.svg">
-  </picture>
+  <img width="128" height="128" alt="Cober Music" src="./public/logo.png">
   <h1>Cober Web Music</h1>
   <p><strong>基于 React + Vite 的第三方网易云音乐 Web 客户端</strong></p>
   <p>简洁 · 流畅 · 响应式</p>

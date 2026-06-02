@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom"
-import { Music, Compass, Search, TrendingUp, Clapperboard, Library, X } from "lucide-react"
+import { Compass, Search, TrendingUp, Clapperboard, Library, X } from "lucide-react"
 import { Topbar } from "./Topbar"
 import { MiniPlayer } from "./MiniPlayer"
 import { MobileNav } from "./MobileNav"
@@ -27,7 +27,7 @@ export function MobileLayout() {
           <aside className="relative w-[240px] h-full flex flex-col bg-[var(--color-bg-surface)] shadow-2xl animate-slide-in-left z-10">
             <div className="h-14 flex items-center justify-between px-4 border-b border-[var(--color-border)]">
               <div className="flex items-center gap-2">
-                <Music size={24} className="text-[var(--color-primary)]" />
+                <img src="/logo.png" alt="Cober Music" className="w-7 h-7 rounded-full object-cover" />
                 <span className="text-base font-bold">Cober Music</span>
               </div>
               <button onClick={() => setShowSidebar(false)} className="p-1.5 hover:bg-[var(--color-bg-elevated)] rounded-full">
