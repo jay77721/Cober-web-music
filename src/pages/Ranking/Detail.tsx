@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { Play } from "lucide-react"
 import { getTopList } from "../../api"
@@ -9,7 +9,7 @@ import { SongList } from "../../components/SongList"
 export function RankingDetailPage() {
   const { id } = useParams()
   const { play, playAll } = usePlayerStore()
-const [detail, setDetail] = useState<any>(null)
+  const [detail, setDetail] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const [detail, setDetail] = useState<any>(null)
   }, [id])
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" /></div>
-  if (!detail) return <p className="text-center py-12">榜单不存在</p>
+  if (!detail) return <p className="text-center py-12 text-[var(--color-text-muted)]">榜单不存在</p>
 
   return (
     <div className="p-6">

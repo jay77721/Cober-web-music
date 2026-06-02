@@ -1,5 +1,5 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react"
-import { X, ChevronDown, Play, Pause, SkipBack, SkipForward, Heart, Share2, Repeat, Shuffle, Repeat1, Disc3, ListMusic, Volume2, VolumeX } from "lucide-react"
+﻿import { useEffect, useRef, useCallback } from "react"
+import { X, ChevronDown, Play, Pause, SkipBack, SkipForward, Heart, Repeat, Shuffle, Repeat1, Disc3, ListMusic, Volume2, VolumeX } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { usePlayerStore } from "../../stores/usePlayerStore"
 import { useLikeStore } from "../../stores/useLikeStore"
@@ -30,19 +30,19 @@ export function FullPlayer() {
   const barRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const prevShowRef = useRef(false)
+  const prevSongIdRef = useRef<number | null>(null)
+  const gsapCtxRef = useRef<gsap.Context | null>(null)
 
   // ─── GSAP open/close transition ───
   useEffect(() => {
     const el = panelRef.current
     if (!el) return
     if (showFullPlayer && !prevShowRef.current) {
-      // Opening
       gsap.fromTo(el,
         { opacity: 0, scale: 0.92, y: 40 },
         { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "power3.out" }
       )
     } else if (!showFullPlayer && prevShowRef.current) {
-      // Closing
       gsap.to(el, {
         opacity: 0, scale: 0.92, y: 40, duration: 0.25, ease: "power2.in",
       })
@@ -50,18 +50,29 @@ export function FullPlayer() {
     prevShowRef.current = showFullPlayer
   }, [showFullPlayer])
 
-  // ─── GSAP album art entrance ───
+  // ─── GSAP album art entrance — 只在 FullPlayer 打开时触发一次，而非每次切歌 ───
   useEffect(() => {
-    if (!showFullPlayer || !currentSong) return
+    if (!showFullPlayer) return
     const el = panelRef.current
     if (!el) return
+
+    // 如果已经针对当前歌曲播过入场动画，跳过
+    const songId = currentSong?.id ?? null
+    if (songId === prevSongIdRef.current) return
+    prevSongIdRef.current = songId
+
+    // 清理旧 context
+    if (gsapCtxRef.current) gsapCtxRef.current.revert()
+
     const ctx = gsap.context(() => {
       const albumArt = el.querySelector("[data-album-art]")
       const controls = el.querySelector("[data-controls-area]")
       if (albumArt) { gsap.set(albumArt, { clearProps: "all" }); gsap.fromTo(albumArt, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }) }
       if (controls) { gsap.set(controls, { clearProps: "all" }); gsap.fromTo(controls, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }) }
     }, el)
-    return () => ctx.revert()
+    gsapCtxRef.current = ctx
+
+    return () => { if (gsapCtxRef.current) { gsapCtxRef.current.revert(); gsapCtxRef.current = null } }
   }, [showFullPlayer, currentSong?.id])
 
   useEffect(() => {
@@ -238,6 +249,7 @@ export function FullPlayer() {
               <div className="hidden md:block">
                 <button onClick={cycleQuality}
                   className="px-2 py-1 text-[10px] border border-white/40 rounded text-white/80 hover:border-white hover:text-white transition-colors uppercase tracking-wider">
+                  {QUALITY_LABELS[audioQuality]}
                 </button>
               </div>
             </div>
@@ -247,14 +259,3 @@ export function FullPlayer() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-

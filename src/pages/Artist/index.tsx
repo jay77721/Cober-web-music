@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { Play, UserPlus, UserCheck, ChevronRight } from "lucide-react"
 import { getArtistDetail, getArtistSongs, getArtistAlbum, getArtistMv, getArtistDesc, getSimiArtist, artistSub } from "../../api"
 import { usePlayerStore } from "../../stores/usePlayerStore"
-import { getImgUrl } from "../../utils/format"
+import { getImgUrl, formatDuration } from "../../utils/format"
 import { SongList } from "../../components/SongList"
 import { CoverCard } from "../../components/CoverCard"
 
@@ -20,7 +20,6 @@ export function ArtistPage() {
   const [tab, setTab] = useState<"songs" | "albums" | "mvs">("songs")
   const [followed, setFollowed] = useState(false)
   const [showFullDesc, setShowFullDesc] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -43,8 +42,6 @@ export function ArtistPage() {
       if (artistData?.followed !== undefined) setFollowed(!!artistData.followed)
     })
   }, [id])
-
-
 
   const toggleFollow = async () => {
     if (!id) return
@@ -176,14 +173,3 @@ export function ArtistPage() {
     </div>
   )
 }
-
-function formatDuration(ms: number) {
-  if (!ms) return "0:00"
-  const totalSec = Math.floor(ms / 1000)
-  const m = Math.floor(totalSec / 60)
-  const s = totalSec % 60
-  return `${m}:${s.toString().padStart(2, "0")}`
-}
-
-
-

@@ -1,11 +1,12 @@
-﻿import { useNavigate } from "react-router-dom"
+﻿import { memo } from "react"
+import { useNavigate } from "react-router-dom"
 import { Play } from "lucide-react"
 import { getImgUrl, formatCount } from "../utils/format"
 import { handleImgError } from "../utils/format"
 
 interface Props { id: number; name: string; picUrl: string; playCount?: number; type?: string; style?: React.CSSProperties }
 
-export function CoverCard({ id, name, picUrl, playCount, type = "playlist", style }: Props) {
+export const CoverCard = memo(function CoverCard({ id, name, picUrl, playCount, type = "playlist", style }: Props) {
   const navigate = useNavigate()
   return (
     <div className="group cursor-pointer transition-all duration-500 hover:scale-[1.03]" style={style}
@@ -27,4 +28,4 @@ export function CoverCard({ id, name, picUrl, playCount, type = "playlist", styl
       <p className="text-sm font-medium text-[var(--color-text-primary)] truncate px-0.5 group-hover:text-[var(--color-primary)] transition-colors duration-300">{name}</p>
     </div>
   )
-}
+})

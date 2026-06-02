@@ -1,4 +1,4 @@
-﻿import { useRef } from "react"
+﻿import { memo } from "react"
 import { Play, Heart, Clock, Music } from "lucide-react"
 import { getImgUrl, formatDuration, getSongArtists } from "../utils/format"
 import { handleImgError } from "../utils/format"
@@ -9,10 +9,11 @@ import { useAppStore } from "../stores/useAppStore"
 
 interface Props { songs: any[]; onPlay?: (song: any) => void; showAlbum?: boolean; showHeader?: boolean }
 
-export function SongList({ songs, onPlay, showAlbum = true, showHeader = false }: Props) {
-  const { toggleLike, isLiked } = useLikeStore()
-  const { isLoggedIn } = useAuthStore()
-  const { setShowLogin } = useAppStore()
+export const SongList = memo(function SongList({ songs, onPlay, showAlbum = true, showHeader = false }: Props) {
+  const toggleLike = useLikeStore((s) => s.toggleLike)
+  const isLiked = useLikeStore((s) => s.isLiked)
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const setShowLogin = useAppStore((s) => s.setShowLogin)
 
   if (!songs?.length) return (
     <div className="flex flex-col items-center justify-center py-16 text-[var(--color-text-muted)]">
@@ -83,4 +84,4 @@ export function SongList({ songs, onPlay, showAlbum = true, showHeader = false }
       </div>
     </div>
   )
-}
+})

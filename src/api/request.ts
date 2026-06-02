@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+﻿/// <reference types="vite/client" />
 import axios from "axios"
 
 const api = axios.create({
@@ -29,7 +29,7 @@ api.interceptors.response.use(
   (res) => res.data,
   (err) => {
     if (err.response?.status === 301 || err.response?.data?.code === 301) {
-      window.dispatchEvent(new CustomEvent("need-login"))
+      window.dispatchEvent(new Event("need-login"))
     }
     return Promise.reject(err)
   }

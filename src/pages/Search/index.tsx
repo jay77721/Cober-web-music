@@ -19,7 +19,7 @@ const TABS = [
 export function SearchPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const { play, playAll } = usePlayerStore()
+  const { play } = usePlayerStore()
   const query = params.get("q") || ""
   const [activeTab, setActiveTab] = useState(1)
   const [results, setResults] = useState<Record<string, any[]>>({})
@@ -31,9 +31,6 @@ export function SearchPage() {
   const [hotLoading, setHotLoading] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
-  const prevQueryRef = useRef(query)
-  const prevTabRef = useRef(activeTab)
-  const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     searchHot().then((r: any) => setHotList(r?.result?.hots || [])).finally(() => setHotLoading(false))
@@ -50,8 +47,6 @@ export function SearchPage() {
       setResults({ [key]: r?.result?.[key] || [] })
     }).finally(() => setLoading(false))
   }, [query, activeTab])
-
-
 
   const handleInput = useCallback((val: string) => {
     setInputVal(val)
@@ -174,7 +169,7 @@ export function SearchPage() {
                   </div>
                   {i < 3 && (
                     <span className="text-[10px] text-[var(--color-primary)] font-bold shrink-0">
-                      {i === 0 ? "?? 热" : i === 1 ? "热" : "新"}
+                      {i === 0 ? "🔥 热" : i === 1 ? "热" : "新"}
                     </span>
                   )}
                 </div>
@@ -215,7 +210,6 @@ export function SearchPage() {
               </div>
             )}
 
-            <div ref={resultsRef}>
             {!loading && activeTab === 1 && (results.songs || []).length > 0 && (
               <div className="space-y-0.5">
                 {(results.songs || []).map((s: any, i: number) => {
@@ -358,14 +352,9 @@ export function SearchPage() {
                 ))}
               </div>
             )}
-            </div>
           </div>
         )}
       </div>
     </div>
   )
 }
-
-
-
-

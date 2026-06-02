@@ -17,7 +17,8 @@ export const SIDEBAR_MENU = [
 
 export const MOBILE_TABS = [
   { path: "/", label: "发现", icon: "Compass" },
-  { path: "/ranking", label: "排行榜", icon: "TrendingUp" },
+  { path: "/mv", label: "MV", icon: "Clapperboard" },
   { path: "/search", label: "搜索", icon: "Search" },
+  { path: "/ranking", label: "排行", icon: "TrendingUp" },
   { path: "/user", label: "我的", icon: "Library" },
 ]

@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom"
 import { Play, TrendingUp, Sparkles } from "lucide-react"
 import { getMvAll, getTopMvList } from "../../api"
-import { getImgUrl, formatCount } from "../../utils/format"
+import { getImgUrl, formatCount, formatDuration } from "../../utils/format"
 
 export function MvListPage() {
   const navigate = useNavigate()
@@ -63,7 +63,7 @@ export function MvListPage() {
                   <span className="px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] text-white text-xs">{formatCount(m.playCount)}次播放</span>
                 </div>
                 <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/50 backdrop-blur-sm rounded text-[10px] text-white/90">
-                  {formatMvDuration(m.duration || m.dt)}
+                  {formatDuration(m.duration || m.dt)}
                 </div>
               </div>
               <p className="text-sm font-medium truncate px-0.5">{m.name}</p>
@@ -74,12 +74,4 @@ export function MvListPage() {
       )}
     </div>
   )
-}
-
-function formatMvDuration(ms: number) {
-  if (!ms) return "0:00"
-  const totalSec = Math.floor(ms / 1000)
-  const m = Math.floor(totalSec / 60)
-  const s = totalSec % 60
-  return `${m}:${s.toString().padStart(2, "0")}`
 }

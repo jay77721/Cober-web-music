@@ -42,7 +42,7 @@ function lighten(hex: string, amount: number) {
   return `rgb(${Math.min(255, Math.round(r + (255 - r) * amount))}, ${Math.min(255, Math.round(g + (255 - g) * amount))}, ${Math.min(255, Math.round(b + (255 - b) * amount))})`
 }
 
-function dim(hex: string, opacity: number) {
+export function dim(hex: string, opacity: number) {
   const { r, g, b } = hexToRgb(hex)
   return `rgba(${r}, ${g}, ${b}, ${opacity})`
 }

@@ -1,7 +1,8 @@
-import api from "./request"
+﻿import api from "./request"
+import type { SearchResponse, LoginResponse, PlaylistDetailResponse, TopListResponse, TopDetailResponse } from "../types/api"
 
 export const search = (keywords: string, type = 1, limit = 30, offset = 0) =>
-  api.get("/search", { params: { keywords, type, limit, offset } }) as Promise<any>
+  api.get("/search", { params: { keywords, type, limit, offset } }) as Promise<SearchResponse>
 
 export const searchSuggest = (keywords: string) =>
   api.get("/search/suggest", { params: { keywords } }) as Promise<any>

@@ -27,24 +27,35 @@ export let audioSeek: ((time: number) => void) | null = null
 
 export function useAudio() {
   const howlRef = useRef<Howl | null>(null)
-  const audioUnlockedRef = useRef(false)
   const rafRef = useRef<number>(0)
   const unsubBufferRef = useRef<(() => void) | null>(null)
-  const { currentSong, isPlaying, volume, crossfade, audioQuality, next, setDuration, setCurrentTime, setLyrics, setCurrentLyricIndex, setBufferProgress, setLoading, setError } = usePlayerStore()
+  // 防止竞态：标记当前歌曲是否已被后续切歌废弃
+  const currentLoadIdRef = useRef<number | null>(null)
 
-  const setupHowl = useCallback((url: string, song: typeof currentSong) => {
+  const {
+    currentSong, isPlaying, volume, crossfade, audioQuality,
+    next, setDuration, setCurrentTime, setLyrics, setCurrentLyricIndex,
+    setBufferProgress, setLoading, setError,
+  } = usePlayerStore()
+
+  const setupHowl = useCallback((url: string, songId: number) => {
     const store = usePlayerStore.getState()
     const howl = new Howl({ src: [url], html5: true, volume: store.volume, format: ["mp3", "flac"] })
     howlRef.current = howl
 
     howl.once("load", () => {
+      // 如果已被后续切歌废弃，忽略本次回调
+      if (currentLoadIdRef.current !== songId) { try { howl.unload() } catch {}; return }
       setDuration(howl.duration())
       setLoading(false)
       unsubBufferRef.current?.()
       unsubBufferRef.current = monitorBuffer(howl, setBufferProgress)
     })
     howl.on("end", () => { next() })
-    howl.on("loaderror", () => { setError("歌曲加载失败"); setLoading(false) })
+    howl.on("loaderror", () => {
+      if (currentLoadIdRef.current !== songId) return
+      setError("歌曲加载失败"); setLoading(false)
+    })
 
     if (crossfade > 0 && store.isPlaying) {
       howl.volume(0); howl.play(); howl.fade(0, volume, crossfade * 1000)
@@ -52,9 +63,8 @@ export function useAudio() {
       howl.play()
     }
 
-    // Preload next
     preloadNext(store)
-  }, [next, setDuration, setLyrics, setBufferProgress, setLoading, setError, volume, crossfade, audioQuality])
+  }, [next, setDuration, setBufferProgress, setLoading, setError, volume, crossfade, audioQuality])
 
   const preloadNext = useCallback((store: any) => {
     const { queue, queueIndex, playMode } = store
@@ -77,7 +87,12 @@ export function useAudio() {
 
   const loadSong = useCallback(async (song: typeof currentSong) => {
     if (!song) return
+    const songId = song.id
+    currentLoadIdRef.current = songId
+
     setLoading(true); setError(null); setBufferProgress(0)
+
+    // 卸载旧 Howl（带淡出）
     if (howlRef.current) {
       const old = howlRef.current
       const store = usePlayerStore.getState()
@@ -88,33 +103,63 @@ export function useAudio() {
     }
     howlRef.current = null
     unsubBufferRef.current?.(); unsubBufferRef.current = null
+
     useHistoryStore.getState().add(song)
+
     try {
       const br = QUALITY_BRS[audioQuality] || 999000
-      const res = await getSongUrl(song.id, br)
+      const res = await getSongUrl(songId, br)
+      // 检查：如果歌曲已切换，放弃本次结果
+      if (currentLoadIdRef.current !== songId) { setLoading(false); return }
+
       const url = res.data?.[0]?.url
       if (!url) {
         if (audioQuality !== "standard") {
-          const fb = await getSongUrl(song.id, 128000)
+          const fb = await getSongUrl(songId, 128000)
+          if (currentLoadIdRef.current !== songId) { setLoading(false); return }
           const fbUrl = fb.data?.[0]?.url
           if (!fbUrl) { setError("歌曲暂时无法播放"); setLoading(false); return }
-          setupHowl(fbUrl.replace(/^http:/, "https:"), song)
+          setupHowl(fbUrl.replace(/^http:/, "https:"), songId)
         } else { setError("歌曲暂时无法播放"); setLoading(false); return }
-      } else { setupHowl(url.replace(/^http:/, "https:"), song) }
-    } catch { setError("加载失败"); setLoading(false) }
+      } else {
+        setupHowl(url.replace(/^http:/, "https:"), songId)
+      }
+    } catch {
+      if (currentLoadIdRef.current === songId) {
+        setError("加载失败"); setLoading(false)
+      }
+    }
+
+    // 歌词加载（独立，不影响主流程）
     try {
-      const lr = await getLyric(song.id)
-      setLyrics(parseLyric(lr.lrc?.lyric || ""))
-    } catch { setLyrics([]) }
+      const lr = await getLyric(songId)
+      if (currentLoadIdRef.current === songId) {
+        setLyrics(parseLyric(lr.lrc?.lyric || ""))
+      }
+    } catch {
+      if (currentLoadIdRef.current === songId) setLyrics([])
+    }
   }, [next, setDuration, setLyrics, setBufferProgress, setLoading, setError, volume, crossfade, audioQuality, setupHowl])
 
   useEffect(() => {
     if (currentSong) loadSong(currentSong)
-    return () => { if (howlRef.current) { howlRef.current.unload(); howlRef.current = null } unsubBufferRef.current?.() }
+    return () => {
+      // Cleanup on unmount: unload howl and cancel buffer monitor
+      if (howlRef.current) { howlRef.current.unload(); howlRef.current = null }
+      unsubBufferRef.current?.()
+    }
   }, [currentSong?.id, loadSong])
 
-  useEffect(() => { if (howlRef.current) { if (isPlaying) howlRef.current.play(); else howlRef.current.pause() } }, [isPlaying])
-  useEffect(() => { if (howlRef.current) howlRef.current.volume(volume) }, [volume])
+  useEffect(() => {
+    if (howlRef.current) {
+      if (isPlaying) howlRef.current.play()
+      else howlRef.current.pause()
+    }
+  }, [isPlaying])
+
+  useEffect(() => {
+    if (howlRef.current) howlRef.current.volume(volume)
+  }, [volume])
 
   useEffect(() => {
     const tick = () => {
@@ -131,8 +176,15 @@ export function useAudio() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [isPlaying])
 
-  const seek = useCallback((time: number) => { if (howlRef.current) { howlRef.current.seek(time); setCurrentTime(time) } }, [setCurrentTime])
-  useEffect(() => { audioSeek = seek; return () => { audioSeek = null } }, [seek])
+  const seek = useCallback((time: number) => {
+    if (howlRef.current) { howlRef.current.seek(time); setCurrentTime(time) }
+  }, [setCurrentTime])
+
+  useEffect(() => {
+    audioSeek = seek
+    return () => { audioSeek = null }
+  }, [seek])
+
   return { seek }
 }
 
@@ -151,6 +203,10 @@ function parseLyric(raw: string) {
 function findLyricIndex(lyrics: { time: number; text: string }[], t: number) {
   if (!lyrics.length) return -1
   let lo = 0, hi = lyrics.length - 1, ans = 0
-  while (lo <= hi) { const mid = (lo + hi) >> 1; if (lyrics[mid].time <= t) { ans = mid; lo = mid + 1 } else hi = mid - 1 }
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (lyrics[mid].time <= t) { ans = mid; lo = mid + 1 }
+    else hi = mid - 1
+  }
   return ans
 }

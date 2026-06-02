@@ -23,7 +23,8 @@ export function Home() {
   const [topArtists, setTopArtists] = useState<any[]>([])
   const [bannerIdx, setBannerIdx] = useState(0)
   const bannerRef = useRef<HTMLDivElement>(null)
-  const tlRef = useRef<gsap.core.Timeline | null>(null)
+  const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     getBanner().then((r: any) => setBanners(r?.banners || []))
     getPersonalized(18).then((r: any) => setRecPlaylists(r?.result || []))
@@ -33,40 +34,45 @@ export function Home() {
     if (isLoggedIn) getRecommendSongs().then((r: any) => setDailySongs(r?.data?.dailySongs || []))
   }, [isLoggedIn])
 
-  // ─── GSAP Banner auto-play timeline ───
+  // ─── Banner auto-play: use setInterval + GSAP, avoid recursive timeline leak ───
   useEffect(() => {
     if (banners.length < 2) return
     const container = bannerRef.current
     if (!container) return
 
-    const ctx = gsap.context(() => {
-      const slides = container.querySelectorAll("[data-banner-slide]")
-      if (!slides.length) return
-      gsap.set(slides, { opacity: 0, scale: 1.08 })
-      gsap.set(slides[0], { opacity: 1, scale: 1 })
+    const slides = container.querySelectorAll("[data-banner-slide]")
+    if (!slides.length) return
 
-      tlRef.current = gsap.timeline({ repeat: -1, paused: false, delay: 4 })
-      const loop = () => {
-        const nextIdx = (bannerIdx + 1) % Math.min(banners.length, 5)
-        tlRef.current = gsap.timeline({ repeat: -1, paused: false, delay: 4 })
-        tlRef.current
-          .to(container.querySelectorAll("[data-banner-slide]"), {
-            opacity: 0, scale: 1.08, duration: 0.5, ease: "power2.inOut",
-            onComplete: () => setBannerIdx(nextIdx),
-          })
-          .to(slides[nextIdx], { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, "-=0.3")
-          .call(loop, [], "+=4")
-      }
-      loop()
-    }, container)
+    // Set initial state
+    gsap.set(slides, { opacity: 0, scale: 1.08 })
+    gsap.set(slides[0], { opacity: 1, scale: 1 })
+
+    let currentAnim: gsap.core.Timeline | null = null
+
+    const transitionTo = (nextIdx: number) => {
+      if (currentAnim) currentAnim.kill()
+      currentAnim = gsap.timeline()
+      currentAnim
+        .to(slides, { opacity: 0, scale: 1.08, duration: 0.5, ease: "power2.inOut" })
+        .to(slides[nextIdx], { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, "-=0.3")
+        .call(() => { currentAnim = null })
+    }
+
+    const maxBanners = Math.min(banners.length, 5)
+    bannerTimerRef.current = setTimeout(function tick() {
+      setBannerIdx((prev) => {
+        const next = (prev + 1) % maxBanners
+        transitionTo(next)
+        return next
+      })
+      bannerTimerRef.current = setTimeout(tick, 5000)
+    }, 4000)
 
     return () => {
-      ctx.revert()
-      tlRef.current?.kill()
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
+      if (currentAnim) currentAnim.kill()
     }
   }, [banners.length])
-
-
 
   const handlePlaySong = (song: any) => {
     play({ id: song.id, name: song.name, artists: song.ar || song.artists, album: song.al, duration: song.dt, fee: song.fee })
@@ -76,13 +82,12 @@ export function Home() {
 
   return (
     <div className="h-full overflow-y-auto relative">
-      {/* Ambient decorative orbs */}
       <div className="ambient-orb w-72 h-72 -top-20 -left-20" style={{ background: "var(--color-primary)", opacity: 0.08 }} />
       <div className="ambient-orb w-96 h-96 bottom-40 -right-32" style={{ background: "#6366f1", opacity: 0.06, animationDelay: "-2s" }} />
       <div className="ambient-orb w-48 h-48 top-1/2 left-1/2" style={{ background: "#ec4899", opacity: 0.04, animationDelay: "-4s" }} />
 
       <div className="px-6 pt-4 pb-28 space-y-10 relative z-10">
-        {/* Banner with GSAP */}
+        {/* Banner */}
         {bannerList.length > 0 && (
           <div ref={bannerRef} className="relative overflow-hidden rounded-2xl group aspect-[3.5/1] shadow-xl">
             {bannerList.map((b: any, i: number) => (
@@ -95,7 +100,19 @@ export function Home() {
             {bannerList.length > 1 && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {bannerList.map((_, i) => (
-                  <button key={i} onClick={() => { setBannerIdx(i); tlRef.current?.kill() }}
+                  <button key={i} onClick={() => {
+                    setBannerIdx(i)
+                    if (bannerTimerRef.current) {
+                      clearTimeout(bannerTimerRef.current)
+                      bannerTimerRef.current = setTimeout(function tick() {
+                        setBannerIdx((prev) => {
+                          const next = (prev + 1) % Math.min(banners.length, 5)
+                          return next
+                        })
+                        bannerTimerRef.current = setTimeout(tick, 5000)
+                      }, 4000)
+                    }
+                  }}
                     className={`rounded-full transition-all duration-500 ${
                       i === bannerIdx ? "w-6 h-1.5 bg-white shadow-md" : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
                     }`} />
@@ -219,10 +236,3 @@ export function Home() {
     </div>
   )
 }
-
-
-
-
-
-
-

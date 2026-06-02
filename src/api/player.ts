@@ -1,13 +1,13 @@
-import api from "./request"
+﻿import api from "./request"
 
 export const getSongUrl = (id: number | string, br = 999000) =>
-  api.get("/song/url", { params: { id, br } }) as Promise<any>
+  api.get("/song/url", { params: { id, br } }) as Promise<import("../types/api").SongUrlResponse>
 
 export const getSongDetail = (ids: number | string) =>
   api.get("/song/detail", { params: { ids } }) as Promise<any>
 
 export const getLyric = (id: number) =>
-  api.get("/lyric", { params: { id } }) as Promise<any>
+  api.get("/lyric", { params: { id } }) as Promise<import("../types/api").LyricResponse>
 
 export const getSimiSong = (id: number, limit = 30) =>
   api.get("/simi/song", { params: { id, limit } }) as Promise<any>

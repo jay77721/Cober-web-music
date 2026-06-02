@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useCallback } from "react"
+﻿import { memo, useState, useRef, useCallback } from "react"
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Disc3, Heart, ListMusic } from "lucide-react"
 import { usePlayerStore } from "../../stores/usePlayerStore"
 import { useLikeStore } from "../../stores/useLikeStore"
@@ -7,7 +7,7 @@ import { useAppStore } from "../../stores/useAppStore"
 import { formatTime, getImgUrl } from "../../utils/format"
 import { handleImgError } from "../../utils/format"
 
-function AlbumCover({ url, isPlaying }: { url?: string; isPlaying: boolean }) {
+const AlbumCover = memo(function AlbumCover({ url, isPlaying }: { url?: string; isPlaying: boolean }) {
   if (url) return (
     <img src={getImgUrl(url, 120)}
       className={`w-12 h-12 rounded-md object-cover shrink-0 shadow-lg ${isPlaying ? "animate-spin-slow" : ""}`}
@@ -19,16 +19,35 @@ function AlbumCover({ url, isPlaying }: { url?: string; isPlaying: boolean }) {
       <Disc3 size={22} className="text-[var(--color-text-muted)]" />
     </div>
   )
-}
+})
 
-export function BottomPlayer() {
-  const {
-    currentSong, isPlaying, currentTime, duration, volume, isMuted, isLoading, error,
-    toggle, next, prev, seek, setVolume, setMuted, toggleFullPlayer, togglePlayQueue,
-  } = usePlayerStore()
-  const { toggleLike, isLiked } = useLikeStore()
-  const { isLoggedIn } = useAuthStore()
-  const { setShowLogin } = useAppStore()
+export const BottomPlayer = memo(function BottomPlayer() {
+  // 使用原子化 selector 减少渲染
+  const currentSong = usePlayerStore((s) => s.currentSong)
+  const isPlaying = usePlayerStore((s) => s.isPlaying)
+  const currentTime = usePlayerStore((s) => s.currentTime)
+  const duration = usePlayerStore((s) => s.duration)
+  const volume = usePlayerStore((s) => s.volume)
+  const isMuted = usePlayerStore((s) => s.isMuted)
+  const isLoading = usePlayerStore((s) => s.isLoading)
+  const error = usePlayerStore((s) => s.error)
+  const toggle = usePlayerStore((s) => s.toggle)
+  const next = usePlayerStore((s) => s.next)
+  const prev = usePlayerStore((s) => s.prev)
+  const seek = usePlayerStore((s) => s.seek)
+  const setVolumeAction = usePlayerStore((s) => s.setVolume)
+  const setMuted = usePlayerStore((s) => s.setMuted)
+  const toggleFullPlayer = usePlayerStore((s) => s.toggleFullPlayer)
+  const togglePlayQueue = usePlayerStore((s) => s.togglePlayQueue)
+
+  const songId = currentSong?.id ?? 0
+  const toggleLike = useLikeStore((s) => s.toggleLike)
+  const isLikedFn = useLikeStore((s) => s.isLiked)
+  const isLiked = isLikedFn(songId)
+
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const setShowLogin = useAppStore((s) => s.setShowLogin)
+
   const [hoverProgress, setHoverProgress] = useState<number | null>(null)
   const [hoverTime, setHoverTime] = useState("")
   const barRef = useRef<HTMLDivElement>(null)
@@ -53,12 +72,11 @@ export function BottomPlayer() {
   if (!currentSong) return null
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
-  const liked = isLiked(currentSong.id)
   const albumUrl = currentSong.al?.picUrl || currentSong.album?.picUrl
 
   const toggleMute = () => {
     if (volume > 0 && !isMuted) { prevVolumeRef.current = volume; setMuted(true) }
-    else { setMuted(false); setVolume(prevVolumeRef.current || 0.8) }
+    else { setMuted(false); setVolumeAction(prevVolumeRef.current || 0.8) }
   }
 
   const artists = (currentSong.ar?.map((a: any) => a.name).join(" / ") || "") || currentSong.artists?.map((a: any) => a.name).join(" / ") || ""
@@ -121,7 +139,7 @@ export function BottomPlayer() {
         <div className="hidden md:flex items-center gap-2 flex-1 justify-end">
           <button onClick={() => { if (isLoggedIn) toggleLike(currentSong.id); else setShowLogin(true) }}
             className="p-1.5 text-[var(--color-text-muted)] hover:text-white transition-colors">
-            <Heart size={16} className={liked ? "fill-[var(--color-primary)] text-[var(--color-primary)]" : ""} />
+            <Heart size={16} className={isLiked ? "fill-[var(--color-primary)] text-[var(--color-primary)]" : ""} />
           </button>
           <button onClick={togglePlayQueue} className="p-1.5 text-[var(--color-text-muted)] hover:text-white transition-colors"><ListMusic size={16} /></button>
           <div className="flex items-center gap-1 ml-2">
@@ -130,7 +148,7 @@ export function BottomPlayer() {
             </button>
             <input type="range" min="0" max="1" step="0.01"
               value={isMuted ? 0 : volume}
-              onChange={(e) => { setMuted(false); setVolume(parseFloat(e.target.value)) }}
+              onChange={(e) => { setMuted(false); setVolumeAction(parseFloat(e.target.value)) }}
               className="w-16 h-1 accent-[var(--color-primary)] cursor-pointer volume-slider" />
           </div>
           {error && <span className="text-[10px] text-red-400 max-w-[80px] truncate">{error}</span>}
@@ -138,4 +156,4 @@ export function BottomPlayer() {
       </div>
     </div>
   )
-}
+})

@@ -1,4 +1,5 @@
-﻿import { Play, Pause, Disc3, Heart } from "lucide-react"
+﻿import { memo } from "react"
+import { Play, Pause, Disc3, Heart } from "lucide-react"
 import { usePlayerStore } from "../../stores/usePlayerStore"
 import { useLikeStore } from "../../stores/useLikeStore"
 import { useAuthStore } from "../../stores/useAuthStore"
@@ -6,14 +7,23 @@ import { useAppStore } from "../../stores/useAppStore"
 import { getImgUrl } from "../../utils/format"
 import { handleImgError } from "../../utils/format"
 
-export function MiniPlayer() {
-  const { currentSong, isPlaying, currentTime, duration, toggle, toggleFullPlayer } = usePlayerStore()
-  const { toggleLike, isLiked } = useLikeStore()
-  const { isLoggedIn } = useAuthStore()
-  const { setShowLogin } = useAppStore()
+export const MiniPlayer = memo(function MiniPlayer() {
+  const currentSong = usePlayerStore((s) => s.currentSong)
+  const isPlaying = usePlayerStore((s) => s.isPlaying)
+  const currentTime = usePlayerStore((s) => s.currentTime)
+  const duration = usePlayerStore((s) => s.duration)
+  const toggle = usePlayerStore((s) => s.toggle)
+  const toggleFullPlayer = usePlayerStore((s) => s.toggleFullPlayer)
+
+  const songId = currentSong?.id ?? 0
+  const toggleLike = useLikeStore((s) => s.toggleLike)
+  const isLikedFn = useLikeStore((s) => s.isLiked)
+  const liked = isLikedFn(songId)
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const setShowLogin = useAppStore((s) => s.setShowLogin)
+
   if (!currentSong) return null
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
-  const liked = isLiked(currentSong.id)
   const albumUrl = currentSong.al?.picUrl || currentSong.album?.picUrl
 
   return (
@@ -48,4 +58,4 @@ export function MiniPlayer() {
       </div>
     </div>
   )
-}
+})

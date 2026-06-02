@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react"
+﻿import { lazy, Suspense, useEffect } from "react"
 import { HashRouter, Routes, Route } from "react-router-dom"
 import { useAuthStore } from "./stores/useAuthStore"
 import { useAppStore } from "./stores/useAppStore"
@@ -8,33 +8,42 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"
 import { AudioManager } from "./components/AudioManager"
 import { DesktopLayout } from "./components/Layout/DesktopLayout"
 import { MobileLayout } from "./components/Layout/MobileLayout"
-import { Home } from "./pages/Home/index"
-import { SearchPage } from "./pages/Search/index"
-import { PlaylistPage } from "./pages/Playlist/index"
-import { AlbumPage } from "./pages/Album/index"
-import { ArtistPage } from "./pages/Artist/index"
-import { RankingPage } from "./pages/Ranking/index"
-import { RankingDetailPage } from "./pages/Ranking/Detail"
-import { MvListPage } from "./pages/MV/index"
-import { MvPlayerPage } from "./pages/MV/Player"
-import { VideoListPage } from "./pages/Video/index"
-import { UserPage } from "./pages/User/index"
 import { LoginDialog } from "./components/LoginDialog"
 import { FullPlayer } from "./components/Player/FullPlayer"
 import { PlayQueue } from "./components/Player/PlayQueue"
 import { SongContextMenu } from "./components/SongContextMenu"
 import { ThemePreferences } from "./components/ThemePreferences"
+import { ErrorBoundary } from "./components/ErrorBoundary"
 import { useThemeStore, applyTheme } from "./stores/useThemeStore"
+
+// 路由懒加载
+const Home = lazy(() => import("./pages/Home/index").then(m => ({ default: m.Home })))
+const SearchPage = lazy(() => import("./pages/Search/index").then(m => ({ default: m.SearchPage })))
+const PlaylistPage = lazy(() => import("./pages/Playlist/index").then(m => ({ default: m.PlaylistPage })))
+const AlbumPage = lazy(() => import("./pages/Album/index").then(m => ({ default: m.AlbumPage })))
+const ArtistPage = lazy(() => import("./pages/Artist/index").then(m => ({ default: m.ArtistPage })))
+const RankingPage = lazy(() => import("./pages/Ranking/index").then(m => ({ default: m.RankingPage })))
+const RankingDetailPage = lazy(() => import("./pages/Ranking/Detail").then(m => ({ default: m.RankingDetailPage })))
+const MvListPage = lazy(() => import("./pages/MV/index").then(m => ({ default: m.MvListPage })))
+const MvPlayerPage = lazy(() => import("./pages/MV/Player").then(m => ({ default: m.MvPlayerPage })))
+const VideoListPage = lazy(() => import("./pages/Video/index").then(m => ({ default: m.VideoListPage })))
+const UserPage = lazy(() => import("./pages/User/index").then(m => ({ default: m.UserPage })))
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function App() {
   const { isDark, scheme, accentColor } = useThemeStore()
 
-  // Sync theme + accent color
   useEffect(() => {
     applyTheme(accentColor, isDark)
   }, [accentColor, isDark])
 
-  // Listen for system theme changes
   useEffect(() => {
     if (scheme !== "auto") return
     const mq = window.matchMedia("(prefers-color-scheme: dark)")
@@ -46,6 +55,7 @@ function App() {
     mq.addEventListener("change", handler)
     return () => mq.removeEventListener("change", handler)
   }, [scheme, accentColor])
+
   const isDesktop = useIsDesktop()
   const { checkLogin, guestLogin } = useAuthStore()
   const { setShowLogin } = useAppStore()
@@ -62,34 +72,32 @@ function App() {
   }, [])
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/playlist/:id" element={<PlaylistPage />} />
-          <Route path="/album/:id" element={<AlbumPage />} />
-          <Route path="/artist/:id" element={<ArtistPage />} />
-          <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/ranking/:id" element={<RankingDetailPage />} />
-          <Route path="/mv" element={<MvListPage />} />
-          <Route path="/mv/player/:id" element={<MvPlayerPage />} />
-          <Route path="/user" element={<UserPage />} />
-          <Route path="/video" element={<VideoListPage />} />
-        </Route>
-      </Routes>
-      <AudioManager />
-      <LoginDialog />
-      <FullPlayer />
-      <PlayQueue />
-      <SongContextMenu />
-      <ThemePreferences />
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Suspense fallback={<PageLoader />}><Home /></Suspense>} />
+            <Route path="/search" element={<Suspense fallback={<PageLoader />}><SearchPage /></Suspense>} />
+            <Route path="/playlist/:id" element={<Suspense fallback={<PageLoader />}><PlaylistPage /></Suspense>} />
+            <Route path="/album/:id" element={<Suspense fallback={<PageLoader />}><AlbumPage /></Suspense>} />
+            <Route path="/artist/:id" element={<Suspense fallback={<PageLoader />}><ArtistPage /></Suspense>} />
+            <Route path="/ranking" element={<Suspense fallback={<PageLoader />}><RankingPage /></Suspense>} />
+            <Route path="/ranking/:id" element={<Suspense fallback={<PageLoader />}><RankingDetailPage /></Suspense>} />
+            <Route path="/mv" element={<Suspense fallback={<PageLoader />}><MvListPage /></Suspense>} />
+            <Route path="/mv/player/:id" element={<Suspense fallback={<PageLoader />}><MvPlayerPage /></Suspense>} />
+            <Route path="/user" element={<Suspense fallback={<PageLoader />}><UserPage /></Suspense>} />
+            <Route path="/video" element={<Suspense fallback={<PageLoader />}><VideoListPage /></Suspense>} />
+          </Route>
+        </Routes>
+        <AudioManager />
+        <LoginDialog />
+        <FullPlayer />
+        <PlayQueue />
+        <SongContextMenu />
+        <ThemePreferences />
+      </HashRouter>
+    </ErrorBoundary>
   )
 }
 
 export default App
-
-
-
-
