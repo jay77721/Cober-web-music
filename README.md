@@ -23,11 +23,11 @@
 
 ## 预览
 
-| 桌面端主页 | 歌单页 |
+| 桌面端主页 | 播放详情页 |
 |:---:|:---:|
 | ![home-desktop](./screenshots/home-desktop.png) | ![playlist](./screenshots/playlist.png) |
 
-| 搜索 | 手机端播放器 |
+| 排行榜 | 手机端播放器 |
 |:---:|:---:|
 | ![search](./screenshots/search.png) | ![player-mobile-1](./screenshots/player-mobile-1.png) |
 
