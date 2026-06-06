@@ -74,10 +74,10 @@
 
 ### 1. 部署后端 API
 
-本项目使用 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 作为数据源，需自行部署：
+本项目使用 [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced) 作为数据源，需自行部署：
 
 ```bash
-git clone https://github.com/Binaryify/NeteaseCloudMusicApi.git
+git clone https://github.com/NeteaseCloudMusicApiEnhanced/api-enhanced.git
 cd NeteaseCloudMusicApi
 node app.js
 ```
@@ -97,7 +97,7 @@ Vite 开发服务器已配置代理，将 /api 请求转发至此地址。
 ### 3. 安装并启动
 
 ```bash
-git clone https://github.com/your-username/cober-web-music.git
+git clone https://github.com/jay77721/Cober-web-music.git
 cd cober-web-music
 
 npm install
